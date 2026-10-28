@@ -66,6 +66,55 @@ connecttoggle.addEventListener("change", () => {
 const connecttext = document.createElement("p");
 connecttext.textContent = "Connect Points: ";
 
+const colortext = document.createElement("p");
+colortext.textContent = "Brush Color: ";
+
+//color drawing
+let brushcolor = "black"; //default
+
+const colorOptions = [ //other options
+  "black",
+  "red",
+  "orange",
+  "yellow",
+  "green",
+  "blue",
+  "purple",
+  "pink",
+];
+
+const colorButtons: HTMLInputElement[] = [];
+const colorText = document.createElement("p");
+const colorSection = document.createElement("div");
+colorSection.append(colorText);
+
+for (const name of colorOptions) { //loop to create each color button
+  const box = document.createElement("input");
+  box.type = "checkbox";
+  box.id = name + "box";
+  box.checked = name == "black";
+  box.addEventListener("change", () => {
+    brushcolor = name;
+    for (const other of colorButtons) other.checked = other == box;
+    updateswatch();
+  });
+  const label = document.createElement("label");
+  label.htmlFor = box.id;
+  label.textContent = name + " ";
+  colorButtons.push(box);
+  colorSection.append(box, label);
+}
+
+const colorswatch = document.createElement("div");
+colorswatch.style.width = "50px";
+colorswatch.style.height = "50px";
+colorswatch.style.border = "2px solid #333333";
+colorswatch.style.background = brushcolor;
+
+function updateswatch() {
+  colorswatch.style.background = brushcolor;
+}
+
 let lines: Point[][] = []; //every mousedown is a collection of lines
 let currentline: Point[] = [];
 let undonelines: Point[][] = [];
@@ -99,7 +148,7 @@ canvas.addEventListener("mouseup", () => {
 });
 
 function placePoint(x: number, y: number) {
-  const pointcolor = "black";
+  const pointcolor = brushcolor;
 
   if (connectpoints == false) {
     ctx!.fillStyle = pointcolor;
@@ -141,6 +190,8 @@ app.append(
   textbreak,
   sizetext,
   sizeslider,
+  colortext,
+  colorSection,
 );
 
 ctx!.fillStyle = "white";
