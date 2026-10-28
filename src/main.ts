@@ -115,7 +115,7 @@ function updateswatch() {
   colorswatch.style.background = brushcolor;
 }
 
-let lines: Point[][] = []; //every mousedown is a collection of lines
+const lines: Point[][] = []; //every mousedown is a collection of lines
 let currentline: Point[] = [];
 let undonelines: Point[][] = [];
 let prevpoint: Point = {
