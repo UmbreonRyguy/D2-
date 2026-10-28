@@ -23,14 +23,26 @@ interface Pixel {
 }
 let lines = []; //every mousedown is a collection of lines
 
+canvas.addEventListener("mousemove", (event) => {
+  mouseX = event.clientX - canvas.width / 40;
+  mouseY = event.clientY - canvas.height / 4.2;
+  if (isMouseDown) {
+    placePixel(mouseX, mouseY);
+  }
+});
+
 document.addEventListener("mousedown", () => {
   isMouseDown = true;
-  console.log("Mouse button pressed down!");
 });
 document.addEventListener("mouseup", () => {
   isMouseDown = false;
-  console.log("Mouse button not down!");
 });
+
+function placePixel(x: number, y: number) {
+  ctx!.fillStyle = "black";
+  ctx!.fillRect(x, y, 1, 1);
+  console.log("placing pixel");
+}
 
 app.append(heading, message, canvas);
 
