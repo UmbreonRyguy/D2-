@@ -25,6 +25,16 @@ const textbreak = document.createElement("br");
 const sizetext = document.createElement("p");
 sizetext.textContent = "Paintbrush Size: ";
 
+const undobutton = document.createElement("button");
+
+// 2. Configure the button (Text, ID/Classes, Event Listener)
+undobutton.textContent = "Undo";
+undobutton.id = "undobutton";
+undobutton.addEventListener("click", () => {
+  lines.pop();
+  redrawall();
+});
+
 let isMouseDown = false;
 let mouseX = 0;
 let mouseY = 0;
@@ -35,7 +45,7 @@ interface Point {
   color: string;
   size: number;
 }
-let lines = []; //every mousedown is a collection of lines
+let lines: Point[][] = []; //every mousedown is a collection of lines
 let currentline: Point[] = [];
 
 canvas.addEventListener("mousemove", (event) => {
@@ -47,10 +57,10 @@ canvas.addEventListener("mousemove", (event) => {
   }
 });
 
-document.addEventListener("mousedown", () => {
+canvas.addEventListener("mousedown", () => {
   isMouseDown = true;
 });
-document.addEventListener("mouseup", () => {
+canvas.addEventListener("mouseup", () => {
   isMouseDown = false;
   lines.push(currentline);
   currentline = [];
@@ -64,7 +74,33 @@ function placePoint(x: number, y: number) {
   currentline.push({ x: x, y: y, size: brushsize, color: pointcolor });
 }
 
-app.append(heading, canvas, textbreak, sizetext, sizeslider);
+app.append(
+  heading,
+  canvas,
+  textbreak,
+  undobutton,
+  textbreak,
+  sizetext,
+  sizeslider,
+);
 
 ctx!.fillStyle = "white";
 ctx!.fillRect(0, 0, 600, 600);
+
+function redrawall() {
+  ctx!.fillStyle = "white";
+  ctx!.fillRect(0, 0, 600, 600);
+
+  for (let i = 0; i < lines.length; i++) {
+    for (let j = 0; j < lines[i].length; j++) {
+      const currentpoint: Point = lines[i][j];
+      ctx!.fillStyle = currentpoint.color;
+      ctx!.fillRect(
+        currentpoint.x,
+        currentpoint.y,
+        currentpoint.size,
+        currentpoint.size,
+      );
+    }
+  }
+}
