@@ -166,7 +166,7 @@ function redrawall() {
 
       if (currentpoint.connected && prevpointvalid) {
         ctx!.strokeStyle = currentpoint.color;
-        ctx!.lineWidth = brushsize;
+        ctx!.lineWidth = currentpoint.size;
         ctx!.lineCap = "round";
 
         ctx!.beginPath();
