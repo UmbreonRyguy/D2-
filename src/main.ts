@@ -100,8 +100,11 @@ canvas.addEventListener("mouseup", () => {
 
 function placePoint(x: number, y: number) {
   const pointcolor = "black";
-  ctx!.fillStyle = pointcolor;
-  ctx!.fillRect(x, y, brushsize, brushsize);
+
+  if (connectpoints == false) {
+    ctx!.fillStyle = pointcolor;
+    ctx!.fillRect(x, y, brushsize, brushsize);
+  }
 
   if (connectpoints && prevpointvalid) {
     ctx!.strokeStyle = pointcolor;
@@ -150,13 +153,16 @@ function redrawall() {
   for (let i = 0; i < lines.length; i++) {
     for (let j = 0; j < lines[i].length; j++) {
       const currentpoint: Point = lines[i][j];
-      ctx!.fillStyle = currentpoint.color;
-      ctx!.fillRect(
-        currentpoint.x,
-        currentpoint.y,
-        currentpoint.size,
-        currentpoint.size,
-      );
+
+      if (currentpoint.connected == false) {
+        ctx!.fillStyle = currentpoint.color;
+        ctx!.fillRect(
+          currentpoint.x,
+          currentpoint.y,
+          currentpoint.size,
+          currentpoint.size,
+        );
+      }
 
       if (currentpoint.connected && prevpointvalid) {
         ctx!.strokeStyle = currentpoint.color;
