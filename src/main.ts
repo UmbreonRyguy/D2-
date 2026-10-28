@@ -32,18 +32,21 @@ let isMouseDown = false;
 let mouseX = 0;
 let mouseY = 0;
 
-interface Pixel {
+interface Point {
   x: number;
   y: number;
   color: "string";
+  size: number;
 }
 let lines = []; //every mousedown is a collection of lines
+let currentline = [];
 
 canvas.addEventListener("mousemove", (event) => {
-  mouseX = event.clientX - canvas.width / 40;
-  mouseY = event.clientY - canvas.height / 9;
+  const rect = canvas.getBoundingClientRect();
+  mouseX = event.clientX - rect.left;
+  mouseY = event.clientY - rect.top;
   if (isMouseDown) {
-    placePixel(mouseX, mouseY);
+    placePoint(mouseX, mouseY);
   }
 });
 
@@ -54,7 +57,7 @@ document.addEventListener("mouseup", () => {
   isMouseDown = false;
 });
 
-function placePixel(x: number, y: number) {
+function placePoint(x: number, y: number) {
   ctx!.fillStyle = "black";
   ctx!.fillRect(x, y, brushsize, brushsize);
   console.log("placing pixel");
