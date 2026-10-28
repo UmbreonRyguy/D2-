@@ -3,9 +3,6 @@ const app = document.querySelector<HTMLElement>("#app")!;
 const heading = document.createElement("h1");
 heading.textContent = "D2 project";
 
-const message = document.createElement("p");
-message.textContent = "Your project starts here.";
-
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
 canvas.width = 500;
@@ -35,11 +32,11 @@ let mouseY = 0;
 interface Point {
   x: number;
   y: number;
-  color: "string";
+  color: string;
   size: number;
 }
 let lines = []; //every mousedown is a collection of lines
-let currentline = [];
+let currentline: Point[] = [];
 
 canvas.addEventListener("mousemove", (event) => {
   const rect = canvas.getBoundingClientRect();
@@ -55,15 +52,19 @@ document.addEventListener("mousedown", () => {
 });
 document.addEventListener("mouseup", () => {
   isMouseDown = false;
+  lines.push(currentline);
+  currentline = [];
 });
 
 function placePoint(x: number, y: number) {
-  ctx!.fillStyle = "black";
+  const pointcolor = "black";
+  ctx!.fillStyle = pointcolor;
   ctx!.fillRect(x, y, brushsize, brushsize);
-  console.log("placing pixel");
+
+  currentline.push({ x: x, y: y, size: brushsize, color: pointcolor });
 }
 
-app.append(heading, message, canvas, textbreak, sizetext, sizeslider);
+app.append(heading, canvas, textbreak, sizetext, sizeslider);
 
 ctx!.fillStyle = "white";
 ctx!.fillRect(0, 0, 600, 600);
