@@ -53,10 +53,30 @@ interface Point {
   y: number;
   color: string;
   size: number;
+  connected: boolean;
 }
+
+let connectpoints = false;
+const connecttoggle = document.createElement("input");
+connecttoggle.type = "checkbox";
+connecttoggle.checked = false;
+connecttoggle.addEventListener("change", () => {
+  connectpoints = connecttoggle.checked;
+});
+const connecttext = document.createElement("p");
+connecttext.textContent = "Connect Points: ";
+
 let lines: Point[][] = []; //every mousedown is a collection of lines
 let currentline: Point[] = [];
 let undonelines: Point[][] = [];
+let prevpoint: Point = {
+  x: 0,
+  y: 0,
+  color: "black",
+  size: 2,
+  connected: false,
+};
+let prevpointvalid = false;
 
 canvas.addEventListener("mousemove", (event) => {
   const rect = canvas.getBoundingClientRect();
@@ -75,6 +95,7 @@ canvas.addEventListener("mouseup", () => {
   isMouseDown = false;
   lines.push(currentline);
   currentline = [];
+  prevpointvalid = false;
 });
 
 function placePoint(x: number, y: number) {
@@ -82,7 +103,28 @@ function placePoint(x: number, y: number) {
   ctx!.fillStyle = pointcolor;
   ctx!.fillRect(x, y, brushsize, brushsize);
 
-  currentline.push({ x: x, y: y, size: brushsize, color: pointcolor });
+  if (connectpoints && prevpointvalid) {
+    ctx!.strokeStyle = pointcolor;
+    ctx!.lineWidth = brushsize;
+    ctx!.lineCap = "round";
+
+    ctx!.beginPath();
+    ctx!.moveTo(prevpoint.x, prevpoint.y);
+    ctx!.lineTo(x, y);
+    ctx!.stroke();
+  }
+
+  const newpoint: Point = {
+    x: x,
+    y: y,
+    size: brushsize,
+    color: pointcolor,
+    connected: connectpoints,
+  };
+  currentline.push(newpoint);
+
+  prevpointvalid = true;
+  prevpoint = newpoint;
 }
 
 app.append(
@@ -91,6 +133,8 @@ app.append(
   textbreak,
   undobutton,
   redobutton,
+  connecttext,
+  connecttoggle,
   textbreak,
   sizetext,
   sizeslider,
@@ -113,6 +157,21 @@ function redrawall() {
         currentpoint.size,
         currentpoint.size,
       );
+
+      if (currentpoint.connected && prevpointvalid) {
+        ctx!.strokeStyle = currentpoint.color;
+        ctx!.lineWidth = brushsize;
+        ctx!.lineCap = "round";
+
+        ctx!.beginPath();
+        ctx!.moveTo(prevpoint.x, prevpoint.y);
+        ctx!.lineTo(currentpoint.x, currentpoint.y);
+        ctx!.stroke();
+      }
+
+      prevpointvalid = true;
+      prevpoint = currentpoint;
     }
+    prevpointvalid = false;
   }
 }
