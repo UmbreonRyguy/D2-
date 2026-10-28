@@ -27,11 +27,20 @@ sizetext.textContent = "Paintbrush Size: ";
 
 const undobutton = document.createElement("button");
 
-// 2. Configure the button (Text, ID/Classes, Event Listener)
 undobutton.textContent = "Undo";
 undobutton.id = "undobutton";
 undobutton.addEventListener("click", () => {
-  lines.pop();
+  const undoneline = lines.pop();
+  if (undoneline != undefined) undonelines.push(undoneline);
+  redrawall();
+});
+
+const redobutton = document.createElement("button");
+redobutton.textContent = "Redo";
+redobutton.id = "redobutton";
+redobutton.addEventListener("click", () => {
+  const newline = undonelines.pop();
+  if (newline != undefined) lines.push(newline);
   redrawall();
 });
 
@@ -47,6 +56,7 @@ interface Point {
 }
 let lines: Point[][] = []; //every mousedown is a collection of lines
 let currentline: Point[] = [];
+let undonelines: Point[][] = [];
 
 canvas.addEventListener("mousemove", (event) => {
   const rect = canvas.getBoundingClientRect();
@@ -59,6 +69,7 @@ canvas.addEventListener("mousemove", (event) => {
 
 canvas.addEventListener("mousedown", () => {
   isMouseDown = true;
+  undonelines = [];
 });
 canvas.addEventListener("mouseup", () => {
   isMouseDown = false;
@@ -79,6 +90,7 @@ app.append(
   canvas,
   textbreak,
   undobutton,
+  redobutton,
   textbreak,
   sizetext,
   sizeslider,
