@@ -12,6 +12,22 @@ canvas.width = 500;
 canvas.height = 500;
 canvas.style.border = "4px solid #333333";
 
+let brushsize = 2;
+const sizeslider = document.createElement("input");
+sizeslider.type = "range";
+sizeslider.id = "sizeslider";
+sizeslider.min = "1";
+sizeslider.max = "10";
+sizeslider.step = "1";
+sizeslider.value = "2";
+sizeslider.addEventListener("input", () => {
+  brushsize = Number(sizeslider.value);
+  console.log("brushsize is: " + brushsize);
+});
+const textbreak = document.createElement("br");
+const sizetext = document.createElement("p");
+sizetext.textContent = "Paintbrush Size: ";
+
 let isMouseDown = false;
 let mouseX = 0;
 let mouseY = 0;
@@ -25,7 +41,7 @@ let lines = []; //every mousedown is a collection of lines
 
 canvas.addEventListener("mousemove", (event) => {
   mouseX = event.clientX - canvas.width / 40;
-  mouseY = event.clientY - canvas.height / 4.2;
+  mouseY = event.clientY - canvas.height / 9;
   if (isMouseDown) {
     placePixel(mouseX, mouseY);
   }
@@ -40,11 +56,11 @@ document.addEventListener("mouseup", () => {
 
 function placePixel(x: number, y: number) {
   ctx!.fillStyle = "black";
-  ctx!.fillRect(x, y, 1, 1);
+  ctx!.fillRect(x, y, brushsize, brushsize);
   console.log("placing pixel");
 }
 
-app.append(heading, message, canvas);
+app.append(heading, message, canvas, textbreak, sizetext, sizeslider);
 
 ctx!.fillStyle = "white";
 ctx!.fillRect(0, 0, 600, 600);
