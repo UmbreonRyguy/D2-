@@ -57,10 +57,10 @@ interface Point {
   emoji?: string;
 }
 
-let connectpoints = false;
+let connectpoints = true;
 const connecttoggle = document.createElement("input");
 connecttoggle.type = "checkbox";
-connecttoggle.checked = false;
+connecttoggle.checked = true;
 connecttoggle.addEventListener("change", () => {
   connectpoints = connecttoggle.checked;
 });
@@ -115,6 +115,69 @@ colorswatch.style.background = brushcolor;
 function updateswatch() {
   colorswatch.style.background = brushcolor;
 }
+
+const exportbutton = document.createElement("button");
+exportbutton.textContent = "Export Current Drawing to PNG";
+exportbutton.id = "exportbutton";
+exportbutton.addEventListener("click", () => {
+  const newcanvas = document.createElement("canvas");
+  const newctx = newcanvas.getContext("2d");
+
+  const newscale = 2;
+  newcanvas.width = canvas.width * newscale;
+  newcanvas.height = canvas.height * newscale;
+
+  newctx!.fillStyle = "white";
+  newctx!.fillRect(0, 0, 600 * newscale, 600 * newscale);
+
+  for (let i = 0; i < lines.length; i++) {
+    for (let j = 0; j < lines[i].length; j++) {
+      const currentpoint: Point = lines[i][j];
+      if (currentpoint.emoji) {
+        newctx!.font = `${currentpoint.size * newscale}px serif`;
+        newctx!.textAlign = "center";
+        newctx!.textBaseline = "middle";
+        newctx!.fillText(
+          currentpoint.emoji!,
+          currentpoint.x * newscale,
+          currentpoint.y * newscale,
+        );
+        continue;
+      }
+      if (currentpoint.connected == false) {
+        newctx!.fillStyle = currentpoint.color;
+        newctx!.fillRect(
+          currentpoint.x * newscale,
+          currentpoint.y * newscale,
+          currentpoint.size * newscale,
+          currentpoint.size * newscale,
+        );
+      }
+
+      if (currentpoint.connected && prevpointvalid) {
+        newctx!.strokeStyle = currentpoint.color;
+        newctx!.lineWidth = currentpoint.size;
+        newctx!.lineCap = "round";
+
+        newctx!.beginPath();
+        newctx!.moveTo(prevpoint.x * newscale, prevpoint.y * newscale);
+        newctx!.lineTo(currentpoint.x * newscale, currentpoint.y * newscale);
+        newctx!.stroke();
+      }
+
+      prevpointvalid = true;
+      prevpoint = currentpoint;
+    }
+    prevpointvalid = false;
+  }
+
+  const img = newcanvas.toDataURL("image/png");
+  const link = document.createElement("a");
+  link.href = img;
+  link.download = "canvas-image.png";
+  app.appendChild(link);
+  link.click();
+});
 
 //EMOJI PLACING
 let selectedEmoji = ""; //default none selected
@@ -266,6 +329,8 @@ app.append(
   colortext,
   colorSection,
   emojisection,
+  textbreak,
+  exportbutton,
 );
 
 ctx!.fillStyle = "white";
