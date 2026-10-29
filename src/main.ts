@@ -116,62 +116,95 @@ function updateswatch() {
   colorswatch.style.background = brushcolor;
 }
 
+//Extracted Function which takes duplicated code from export and the redrawall function and puts it intoo a single function called in both spots.
+function render(c: CanvasRenderingContext2D, scale = 1) { //added scale parameter so export can be scaled up
+  c.fillStyle = "white";
+  c.fillRect(0, 0, canvas.width * scale, canvas.height * scale);
+  c.lineCap = "round";
+
+  for (const line of lines) {
+    let prev: Point | null = null;
+    for (const p of line) {
+      if (p.emoji) {
+        drawsticker(c, p, scale);
+        continue;
+      }
+      if (!p.connected) {
+        c.fillStyle = p.color;
+        c.fillRect(p.x * scale, p.y * scale, p.size * scale, p.size * scale);
+      } else if (prev) {
+        c.strokeStyle = p.color;
+        c.lineWidth = p.size * scale;
+        c.beginPath();
+        c.moveTo(prev.x * scale, prev.y * scale);
+        c.lineTo(p.x * scale, p.y * scale);
+        c.stroke();
+      }
+      prev = p;
+    }
+  }
+}
+
 const exportbutton = document.createElement("button");
 exportbutton.textContent = "Export Current Drawing to PNG";
 exportbutton.id = "exportbutton";
 exportbutton.addEventListener("click", () => {
-  const newcanvas = document.createElement("canvas");
-  const newctx = newcanvas.getContext("2d");
+  //const newcanvas = document.createElement("canvas");
+  //const newctx = newcanvas.getContext("2d");
 
-  const newscale = 2;
-  newcanvas.width = canvas.width * newscale;
-  newcanvas.height = canvas.height * newscale;
+  const scale = 2;
+  const output = document.createElement("canvas");
+  output.width = canvas.width * scale;
+  output.height = canvas.height * scale;
+  render(output.getContext("2d")!, scale);
 
-  newctx!.fillStyle = "white";
-  newctx!.fillRect(0, 0, 600 * newscale, 600 * newscale);
+  //REFACTORED BELOW INTO AN EXTRACTED RENDER FUNCTION FOR STEP 9.
 
-  for (let i = 0; i < lines.length; i++) {
-    for (let j = 0; j < lines[i].length; j++) {
-      const currentpoint: Point = lines[i][j];
-      if (currentpoint.emoji) {
-        newctx!.font = `${currentpoint.size * newscale}px serif`;
-        newctx!.textAlign = "center";
-        newctx!.textBaseline = "middle";
-        newctx!.fillText(
-          currentpoint.emoji!,
-          currentpoint.x * newscale,
-          currentpoint.y * newscale,
-        );
-        continue;
-      }
-      if (currentpoint.connected == false) {
-        newctx!.fillStyle = currentpoint.color;
-        newctx!.fillRect(
-          currentpoint.x * newscale,
-          currentpoint.y * newscale,
-          currentpoint.size * newscale,
-          currentpoint.size * newscale,
-        );
-      }
+  // newctx!.fillStyle = "white";
+  // newctx!.fillRect(0, 0, 600 * newscale, 600 * newscale);
 
-      if (currentpoint.connected && prevpointvalid) {
-        newctx!.strokeStyle = currentpoint.color;
-        newctx!.lineWidth = currentpoint.size;
-        newctx!.lineCap = "round";
+  // for (let i = 0; i < lines.length; i++) {
+  //   for (let j = 0; j < lines[i].length; j++) {
+  //     const currentpoint: Point = lines[i][j];
+  //     if (currentpoint.emoji) {
+  //       newctx!.font = `${currentpoint.size * newscale}px serif`;
+  //       newctx!.textAlign = "center";
+  //       newctx!.textBaseline = "middle";
+  //       newctx!.fillText(
+  //         currentpoint.emoji!,
+  //         currentpoint.x * newscale,
+  //         currentpoint.y * newscale,
+  //       );
+  //       continue;
+  //     }
+  //     if (currentpoint.connected == false) {
+  //       newctx!.fillStyle = currentpoint.color;
+  //       newctx!.fillRect(
+  //         currentpoint.x * newscale,
+  //         currentpoint.y * newscale,
+  //         currentpoint.size * newscale,
+  //         currentpoint.size * newscale,
+  //       );
+  //     }
 
-        newctx!.beginPath();
-        newctx!.moveTo(prevpoint.x * newscale, prevpoint.y * newscale);
-        newctx!.lineTo(currentpoint.x * newscale, currentpoint.y * newscale);
-        newctx!.stroke();
-      }
+  //     if (currentpoint.connected && prevpointvalid) {
+  //       newctx!.strokeStyle = currentpoint.color;
+  //       newctx!.lineWidth = currentpoint.size;
+  //       newctx!.lineCap = "round";
 
-      prevpointvalid = true;
-      prevpoint = currentpoint;
-    }
-    prevpointvalid = false;
-  }
+  //       newctx!.beginPath();
+  //       newctx!.moveTo(prevpoint.x * newscale, prevpoint.y * newscale);
+  //       newctx!.lineTo(currentpoint.x * newscale, currentpoint.y * newscale);
+  //       newctx!.stroke();
+  //     }
 
-  const img = newcanvas.toDataURL("image/png");
+  //     prevpointvalid = true;
+  //     prevpoint = currentpoint;
+  //   }
+  //   prevpointvalid = false;
+  // }
+
+  const img = output.toDataURL("image/png");
   const link = document.createElement("a");
   link.href = img;
   link.download = "canvas-image.png";
@@ -227,11 +260,11 @@ function renderemojis() {
 }
 renderemojis();
 
-function drawsticker(point: Point) {
-  ctx!.font = `${point.size}px serif`;
-  ctx!.textAlign = "center";
-  ctx!.textBaseline = "middle";
-  ctx!.fillText(point.emoji!, point.x, point.y);
+function drawsticker(c: CanvasRenderingContext2D, point: Point, scale = 1) {
+  c.font = `${point.size * scale}px serif`;
+  c.textAlign = "center";
+  c.textBaseline = "middle";
+  c.fillText(point.emoji!, point.x * scale, point.y * scale);
 }
 
 const lines: Point[][] = []; //every mousedown is a collection of lines
@@ -270,7 +303,7 @@ canvas.addEventListener("mousedown", (event) => {
     };
 
     lines.push([sticker]);
-    drawsticker(sticker);
+    drawsticker(ctx!, sticker);
     return;
   }
   isMouseDown = true;
@@ -337,40 +370,42 @@ ctx!.fillStyle = "white";
 ctx!.fillRect(0, 0, 600, 600);
 
 function redrawall() {
-  ctx!.fillStyle = "white";
-  ctx!.fillRect(0, 0, 600, 600);
-
-  for (let i = 0; i < lines.length; i++) {
-    for (let j = 0; j < lines[i].length; j++) {
-      const currentpoint: Point = lines[i][j];
-      if (currentpoint.emoji) {
-        drawsticker(currentpoint);
-        continue;
-      }
-      if (currentpoint.connected == false) {
-        ctx!.fillStyle = currentpoint.color;
-        ctx!.fillRect(
-          currentpoint.x,
-          currentpoint.y,
-          currentpoint.size,
-          currentpoint.size,
-        );
-      }
-
-      if (currentpoint.connected && prevpointvalid) {
-        ctx!.strokeStyle = currentpoint.color;
-        ctx!.lineWidth = currentpoint.size;
-        ctx!.lineCap = "round";
-
-        ctx!.beginPath();
-        ctx!.moveTo(prevpoint.x, prevpoint.y);
-        ctx!.lineTo(currentpoint.x, currentpoint.y);
-        ctx!.stroke();
-      }
-
-      prevpointvalid = true;
-      prevpoint = currentpoint;
-    }
-    prevpointvalid = false;
-  }
+  render(ctx!);
 }
+//REFACTORED INTO AN EXTRACTED RENDER FUNCTION FOR STEP 9.
+
+// ctx!.fillStyle = "white";
+// ctx!.fillRect(0, 0, 600, 600);
+
+// for (let i = 0; i < lines.length; i++) {
+//   for (let j = 0; j < lines[i].length; j++) {
+//     const currentpoint: Point = lines[i][j];
+//     if (currentpoint.emoji) {
+//       drawsticker(currentpoint);
+//       continue;
+//     }
+//     if (currentpoint.connected == false) {
+//       ctx!.fillStyle = currentpoint.color;
+//       ctx!.fillRect(
+//         currentpoint.x,
+//         currentpoint.y,
+//         currentpoint.size,
+//         currentpoint.size,
+//       );
+//     }
+
+//     if (currentpoint.connected && prevpointvalid) {
+//       ctx!.strokeStyle = currentpoint.color;
+//       ctx!.lineWidth = currentpoint.size;
+//       ctx!.lineCap = "round";
+
+//       ctx!.beginPath();
+//       ctx!.moveTo(prevpoint.x, prevpoint.y);
+//       ctx!.lineTo(currentpoint.x, currentpoint.y);
+//       ctx!.stroke();
+//     }
+
+//     prevpointvalid = true;
+//     prevpoint = currentpoint;
+//   }
+//   prevpointvalid = false;
