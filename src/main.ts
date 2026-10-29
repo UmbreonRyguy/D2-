@@ -54,6 +54,7 @@ interface Point {
   color: string;
   size: number;
   connected: boolean;
+  emoji?: string;
 }
 
 let connectpoints = false;
@@ -69,7 +70,7 @@ connecttext.textContent = "Connect Points: ";
 const colortext = document.createElement("p");
 colortext.textContent = "Brush Color: ";
 
-//color drawing
+//COLORS
 let brushcolor = "black"; //default
 
 const colorOptions = [ //other options
@@ -115,6 +116,61 @@ function updateswatch() {
   colorswatch.style.background = brushcolor;
 }
 
+//EMOJI PLACING
+let selectedEmoji = ""; //default none selected
+const emojiOptions = ["😀", "😂", "😍"];
+
+let customEmojis: string[] = [];
+
+const emojitext = document.createElement("p");
+emojitext.textContent = "Stickers: ";
+const emojilist = document.createElement("div");
+const emojiinput = document.createElement("input");
+emojiinput.type = "text";
+emojiinput.id = "emojiinput";
+emojiinput.placeholder = "Add emoji";
+emojiinput.size = 8;
+
+const addemojibutton = document.createElement("button");
+addemojibutton.textContent = "Add Emoji";
+addemojibutton.id = "addemojibutton";
+addemojibutton.addEventListener("click", () => {
+  const newemoji = emojiinput.value.trim();
+  if (!emojiOptions.includes(newemoji) && !customEmojis.includes(newemoji)) {
+    customEmojis.push(newemoji);
+    localStorage.setItem("customemojis", JSON.stringify(customEmojis));
+  }
+  selectedEmoji = newemoji;
+  emojiinput.value = "";
+  renderemojis();
+});
+
+const emojisection = document.createElement("div");
+emojisection.append(emojitext, emojilist, emojiinput, addemojibutton);
+
+function renderemojis() {
+  emojilist.innerHTML = "";
+  for (const emoji of [...emojiOptions, ...customEmojis]) {
+    const button = document.createElement("button");
+    button.textContent = emoji;
+    button.style.background = emoji == selectedEmoji ? "#cccccc" : "";
+    button.addEventListener("click", () => {
+      selectedEmoji = selectedEmoji == emoji ? "" : emoji;
+      renderemojis();
+    });
+    emojilist.append(button);
+  }
+  canvas.style.cursor = selectedEmoji == "" ? "default" : "crosshair";
+}
+renderemojis();
+
+function drawsticker(point: Point) {
+  ctx!.font = `${point.size}px serif`;
+  ctx!.textAlign = "center";
+  ctx!.textBaseline = "middle";
+  ctx!.fillText(point.emoji!, point.x, point.y);
+}
+
 const lines: Point[][] = []; //every mousedown is a collection of lines
 let currentline: Point[] = [];
 let undonelines: Point[][] = [];
@@ -136,11 +192,28 @@ canvas.addEventListener("mousemove", (event) => {
   }
 });
 
-canvas.addEventListener("mousedown", () => {
-  isMouseDown = true;
+canvas.addEventListener("mousedown", (event) => {
   undonelines = [];
+
+  if (selectedEmoji != "") { //handling for when an emoji is selected
+    const rect = canvas.getBoundingClientRect();
+    const sticker: Point = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+      color: brushcolor,
+      size: brushsize * 8,
+      connected: false,
+      emoji: selectedEmoji,
+    };
+
+    lines.push([sticker]);
+    drawsticker(sticker);
+    return;
+  }
+  isMouseDown = true;
 });
 canvas.addEventListener("mouseup", () => {
+  if (!isMouseDown) return;
   isMouseDown = false;
   lines.push(currentline);
   currentline = [];
@@ -192,6 +265,7 @@ app.append(
   sizeslider,
   colortext,
   colorSection,
+  emojisection,
 );
 
 ctx!.fillStyle = "white";
@@ -204,7 +278,10 @@ function redrawall() {
   for (let i = 0; i < lines.length; i++) {
     for (let j = 0; j < lines[i].length; j++) {
       const currentpoint: Point = lines[i][j];
-
+      if (currentpoint.emoji) {
+        drawsticker(currentpoint);
+        continue;
+      }
       if (currentpoint.connected == false) {
         ctx!.fillStyle = currentpoint.color;
         ctx!.fillRect(
