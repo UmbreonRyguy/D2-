@@ -120,7 +120,7 @@ function updateswatch() {
 let selectedEmoji = ""; //default none selected
 const emojiOptions = ["😀", "😂", "😍"];
 
-let customEmojis: string[] = [];
+const customEmojis: string[] = [];
 
 const emojitext = document.createElement("p");
 emojitext.textContent = "Stickers: ";
